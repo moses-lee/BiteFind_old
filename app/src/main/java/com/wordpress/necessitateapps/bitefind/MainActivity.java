@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     private SlidingUpPanelLayout slidingLayout;
     private Preferences pref;
     private Gson gson;
+    private String tempJson="";
+    private String tempToken=null;
 
     //TODO: REMOVE/ADD TOKEN CODE
     @Override
@@ -236,6 +238,8 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     protected void onStop() {
         super.onStop();
         rippleBackground.stopRippleAnimation();
+        tempJson="";
+        tempToken=null;
     }
 
     @Override
@@ -365,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                 if (mLocation.equals("manual_null")) {
                 getManualLocation();
                 } else {
-                    startAsync(null);
+                    startAsync();
             }
         }
     }
@@ -486,7 +490,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                         pref.lat=String.valueOf(location.getLatitude());
                         pref.lng=String.valueOf(location.getLongitude());
                         saveClass();
-                        startAsync(null);
+                        startAsync();
 
                     } else {
                         Snackbar.make(findViewById(R.id.layout),"Location Must be Turned on for Auto Location", Snackbar.LENGTH_LONG).show();
@@ -498,7 +502,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     }
 
 
-    private void startAsync(String nextPageToken){
+    private void startAsync(){
         //gets pref from SharedPreferences
         //sends Context
         //sends completed url to ResultHolder class
@@ -510,25 +514,21 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         final GetResults getResults=new GetResults(this);
         Context mContext=MainActivity.this;
 
+
+        if(!isPrefSame())
+            tempToken=null;
         //getUrl returns URL string
-        String url= urlBuilder.getUrl(mContext, nextPageToken);
+        String url= urlBuilder.getUrl(mContext, tempToken);
 
         final Object objectUrl[]=new Object[1];
         objectUrl[0] = url;
 
-        //have to delay if page token exists
-        //TODO:FIX
-       /** if(nextPageToken!=null){
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    getResults.execute(objectUrl);
-                }
-            }, 2000);
-        }else{
-            getResults.execute(objectUrl);
-        }*/
-        getResults.execute(objectUrl);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getResults.execute(objectUrl);
+            }
+        }, 500);
 
     }
 
@@ -756,64 +756,48 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
             }
         });
     }
-    private String tempJson="";
+
     private boolean isPrefSame(){
         boolean isSame;
         String json = gson.toJson(pref);
-        if(tempJson.equals(json))
+
+        if(tempJson.equals(json)){
             isSame=true;
-        else
-            isSame= false;
+        }else{
+            isSame=false;
+        }
+
         tempJson=json;
 
-         return isSame;
+        return isSame;
     }
 
     //this override the implemented method from AsyncResponse
-    List<HashMap<String, String>> tempList=null;
     @Override
     public void processFinish(List<HashMap<String, String>> nearbyPlaceList, final String nextPageToken, String status){
         //Receives  the result fired from async class
         //of onPostExecute(result) method.
         if(status==null){
-            //TODO FIX THIS S
-            //Returned list is not empty
-//            if (nextPageToken != null && !nextPageToken.isEmpty()) {
-//                //first token
-//                if (tempList == null || tempList.isEmpty()) {
-//                    tempList = nearbyPlaceList;
-//                    startAsync(nextPageToken);
-//                } else {
-//                    //second and third token
-//                    tempList.addAll(nearbyPlaceList);
-//                    startAsync(nextPageToken);
-//                }
-//            } else
-//                //had tokens, but no more
-//                if (tempList != null && !tempList.isEmpty()) {
-//                    tempList.addAll(nearbyPlaceList);
-//                    filterNull(tempList);
-//                    tempList = null;
-//                } else {
-//                    //had no tokens in the first place
-//                    filterNull(nearbyPlaceList);
-//                }
-//            if (nextPageToken != null && isPrefSame()) {
-//                //first token
-//
-//            }
-//
-            Log.v("LOG::", String.valueOf(isPrefSame()));
-            filterNull(nearbyPlaceList);
+
+            if (nextPageToken != null) {
+                tempToken=nextPageToken;
+                filterNull(nearbyPlaceList);
+            }else{
+                tempToken=null;
+                filterNull(nearbyPlaceList);
+            }
+
+
         }else{
             //1st call and list returns empty
-            if(tempList==null||nearbyPlaceList==null){
+            if(nearbyPlaceList==null){
                 errorHandler(3, Thread.currentThread().getStackTrace()[2].getLineNumber(), status);
 
             }else{
                 //not the first call, but the returned is empty
-                filterNull(tempList);
-                tempList=null;
+
+                filterKey(nearbyPlaceList);
+
             }
         }
     }
@@ -833,8 +817,8 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
             }
 
         }
-
         filterKey(nearbyPlaceList);
+
     }
 
     String[] blackList={"hotel","inn","marriott", "hilton", "residence", "golf", "shell", "resort","motel","mobil"};
@@ -848,7 +832,6 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
             tempName=resName.toLowerCase();
 
             for (String keyString : blackList) {
-
                 if (tempName.contains(keyString)) {
                     nearbyPlaceList.remove(i);
                     i--;
@@ -857,39 +840,36 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
             }
         }
-
-        if (nearbyPlaceList.isEmpty()) {
-            errorHandler(1, Thread.currentThread().getStackTrace()[2].getLineNumber(),null);
-        }else{
-            randomize(nearbyPlaceList);
-        }
-
+        randomize(nearbyPlaceList);
     }
 
 
     int tempNumber=-1;
     private void randomize(List<HashMap<String, String>> nearbyPlaceList){
-        int length=nearbyPlaceList.size();
-        Random rand = new Random();
-        int n = rand.nextInt(length);
+        if (nearbyPlaceList.isEmpty()) {
+            errorHandler(1, Thread.currentThread().getStackTrace()[2].getLineNumber(),null);
+        }else{
+            int length=nearbyPlaceList.size();
+            Random rand = new Random();
+            int n = rand.nextInt(length);
 
-        String resName=nearbyPlaceList.get(n).get("place_name");
-        String resImage=nearbyPlaceList.get(n).get("place_image");
+            String resName=nearbyPlaceList.get(n).get("place_name");
+            String resImage=nearbyPlaceList.get(n).get("place_image");
 
-        //so random number don't repeat
-        if(length>1){
-            while(tempNumber==n){
-                n = rand.nextInt(length);
+            //so random number don't repeat
+            if(length>1){
+                while(tempNumber==n){
+                    n = rand.nextInt(length);
+                }
+                resName=nearbyPlaceList.get(n).get("place_name");
+                resImage=nearbyPlaceList.get(n).get("place_image");
             }
-            resName=nearbyPlaceList.get(n).get("place_name");
-            resImage=nearbyPlaceList.get(n).get("place_image");
-        }
-        tempNumber=n;
+            tempNumber=n;
 
-        resImage = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + resImage + "&key=" + getResources().getString(R.string.API_KEY);
-        //sends title and image to popup method
-        //Log.v("LOG:PICKED-TOTAL:", String.valueOf(n)+"-"+String.valueOf(nearbyPlaceList.size()));
-        popUp(resName, resImage);
+            resImage = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + resImage + "&key=" + getResources().getString(R.string.API_KEY);
+
+            popUp(resName, resImage);
+        }
     }
 
 
@@ -904,6 +884,8 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                 errorCode = 0;
             if (status.equals("ZERO_RESULTS"))
                 errorCode = 1;
+            if(status.equals("INVALID_REQUEST"))
+                errorCode=2;
         }
 
         switch (errorCode){
@@ -913,8 +895,11 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
             case 1:
                 Snackbar.make(findViewById(R.id.layout),"No Results Found :(\nPlease Change the Settings for More Results", Snackbar.LENGTH_LONG).show();
                 break;
+            case 2:
+                Snackbar.make(findViewById(R.id.layout),"Please Wait Just a Second...", Snackbar.LENGTH_LONG).show();
+                break;
             default:
-                Snackbar.make(findViewById(R.id.layout),status, Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.layout),"Error", Snackbar.LENGTH_LONG).show();
         }
     }
 
