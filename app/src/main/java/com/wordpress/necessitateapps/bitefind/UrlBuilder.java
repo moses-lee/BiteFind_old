@@ -42,23 +42,23 @@ class UrlBuilder {
         googlePlaceUrl.append("&type="+"restaurant");
 
         //build custom keyword
-        if(!keyword.equals("Any")){
+        if(!keyword.equals(mContext.getString(R.string.Any))){
             googlePlaceUrl.append("&keyword="+keyword);
         }
 
         //build radius
         switch (radius){
             case 0:
-                radius=6000;
+                radius=2000;
                 break;
             case 1:
-                radius=9000;
+                radius=6000;
                 break;
             case 2:
-                radius=17000;
+                radius=9000;
                 break;
             case 3:
-                radius=25000;
+                radius=17000;
                 break;
         }
         googlePlaceUrl.append("&radius="+radius);

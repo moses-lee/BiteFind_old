@@ -74,7 +74,7 @@ class DataParser {
             jsonArray = jsonObject.getJSONArray("results");
             nextPageToken =jsonObject.getString("next_page_token");
 
-        } catch (JSONException e) {
+        } catch (JSONException|NullPointerException e) {
             e.printStackTrace();
         }
 

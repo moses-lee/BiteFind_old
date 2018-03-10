@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.location.Location;
@@ -70,6 +71,7 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     private SlidingUpPanelLayout slidingLayout;
     private Preferences pref;
     private Gson gson;
-    private String tempJson="";
+    private String tempJson=null;
     private String tempToken=null;
 
     //TODO: REMOVE/ADD TOKEN CODE
@@ -103,13 +105,11 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         //sets the toolbar
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //gets rid of toolbar title
         Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
-
 
 
         //initializes views
@@ -152,11 +152,11 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
             public void onClick(View v) {
                 if(mLocation.isEmpty()){
                     //asks for location preferences if first time pressing
-                    Snackbar.make(findViewById(R.id.layout),"You Can Always Change Location Preferences by Long Clicking on Bottom Text", 4000).show();
+                    Snackbar.make(findViewById(R.id.layout),R.string.location_hint, 5000).show();
                     askLocationPref(false);
                 }else
                     if(mLocation.equals("location_auto")){
-                        Snackbar.make(findViewById(R.id.layout),"Long Click to Change Location Preferences", Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(findViewById(R.id.layout),R.string.long_click, Snackbar.LENGTH_SHORT).show();
                     }else{
                         getManualLocation();
                 }
@@ -216,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         askRating();
         easterEgg();
 
+
     }
 
     //LIFECYCLES
@@ -238,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     protected void onStop() {
         super.onStop();
         rippleBackground.stopRippleAnimation();
-        tempJson="";
+        tempJson=null;
         tempToken=null;
     }
 
@@ -259,11 +260,11 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
             if(ratingCounter%8==0&&ratingCounter!=0){
                 AlertDialog.Builder mBuilder = new AlertDialog.Builder(this);
-                mBuilder.setMessage("Enjoying BiteFind?\nWe Would Appreciate Your Rating!");
-                mBuilder.setCancelable(true);
+                mBuilder.setMessage(R.string.rate_prompt);
+                mBuilder.setCancelable(false);
 
                 mBuilder.setPositiveButton(
-                        "Rate",
+                        R.string.rate,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 Intent i = new Intent(Intent.ACTION_VIEW);
@@ -273,14 +274,14 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                             }
                         });
                 mBuilder.setNegativeButton(
-                        "No",
+                        R.string.no,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.dismiss();
                             }
                         });
                 mBuilder.setNeutralButton(
-                        "Never",
+                        R.string.never,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 editor.putInt("rating_count", -1);
@@ -353,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     private void buttonClick(){
 
         if(mLocation.isEmpty()){
-            Snackbar.make(findViewById(R.id.layout),"You Can Always Change Location Preferences by Long Clicking on Bottom Text", Snackbar.LENGTH_LONG).show();
+            Snackbar.make(findViewById(R.id.layout),R.string.location_hint, Snackbar.LENGTH_LONG).show();
             askLocationPref(true);
         }else {
 
@@ -369,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                 if (mLocation.equals("manual_null")) {
                 getManualLocation();
                 } else {
-                    startAsync();
+                    startAsync(false);
             }
         }
     }
@@ -377,11 +378,11 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
     private void askLocationPref(final boolean buttonClick){
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(this);
-        mBuilder.setMessage("Location Preferences:");
+        mBuilder.setMessage(R.string.location_pref);
         mBuilder.setCancelable(true);
 
         mBuilder.setPositiveButton(
-                "Manual",
+                R.string.manual,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         if(mLocation.equals("manual_null")||mLocation.equals("location_auto")||mLocation.isEmpty()){
@@ -399,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                 });
 
         mBuilder.setNegativeButton(
-                "Auto",
+                R.string.auto,
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         mLocation="location_auto";
@@ -423,7 +424,6 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     private void getManualLocation(){
         try {
             AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
-                    .setCountry("US")
                     .build();
             Intent intent =
                     new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
@@ -431,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                             .build(this);
             startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
         } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-            Snackbar.make(findViewById(R.id.layout),"Error: "+e, Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.layout),R.string.error+": "+e, Snackbar.LENGTH_SHORT).show();
         }
     }
 
@@ -451,7 +451,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                 setLocationText();
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
-                Snackbar.make(findViewById(R.id.layout),"Error: "+status, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.layout),R.string.error+": "+status, Snackbar.LENGTH_SHORT).show();
             } else
                 if (resultCode == RESULT_CANCELED) {
                 // The user canceled the operation.
@@ -468,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                     getAutoLocation();
                 } else {
                     //no to permission
-                    Snackbar.make(findViewById(R.id.layout),"Permission Denied", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(findViewById(R.id.layout),R.string.permission_denied, Snackbar.LENGTH_SHORT).show();
                 }
 
                 break;
@@ -490,10 +490,10 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
                         pref.lat=String.valueOf(location.getLatitude());
                         pref.lng=String.valueOf(location.getLongitude());
                         saveClass();
-                        startAsync();
+                        startAsync(false);
 
                     } else {
-                        Snackbar.make(findViewById(R.id.layout),"Location Must be Turned on for Auto Location", Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(findViewById(R.id.layout),R.string.location_permissions, Snackbar.LENGTH_LONG).show();
                     }
                     }
                 });
@@ -502,10 +502,15 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     }
 
 
-    private void startAsync(){
+    private void startAsync(boolean addDelay){
         //gets pref from SharedPreferences
         //sends Context
         //sends completed url to ResultHolder class
+        int buffer=0;
+        if(tempToken!=null)
+            buffer=500;
+        if(addDelay)
+            buffer=2000;
 
         //show progress
         progressBar.setVisibility(View.VISIBLE);
@@ -528,7 +533,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
             public void run() {
                 getResults.execute(objectUrl);
             }
-        }, 500);
+        }, buffer);
 
     }
 
@@ -544,16 +549,16 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         //sets txt below to the radius value
         switch (valRadius) {
             case 0:
-                textRadius.setText(getResources().getString(R.string.miles,3));
+                textRadius.setText(getResources().getString(R.string.miles,1));
                 break;
             case 1:
-                textRadius.setText(getResources().getString(R.string.miles,5));
+                textRadius.setText(getResources().getString(R.string.miles,3));
                 break;
             case 2:
-                textRadius.setText(getResources().getString(R.string.miles,10));
+                textRadius.setText(getResources().getString(R.string.miles,5));
                 break;
             case 3:
-                textRadius.setText(getResources().getString(R.string.miles,15));
+                textRadius.setText(getResources().getString(R.string.miles,10));
                 break;
             default:
                 Toast.makeText(this, "Error: SP:R", Toast.LENGTH_LONG).show();
@@ -568,7 +573,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         //sets txt below to the radius value
         switch (valCost) {
             case 0:
-                textCost.setText(getResources().getString(R.string.any));
+                textCost.setText(getResources().getString(R.string.Any));
                 break;
             case 1:
                 textCost.setText("$");
@@ -598,7 +603,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         // Apply the adapter to the spinner
         spinnerKeyword.setAdapter(adapter);
         //spinner selection in the beginning
-        if(pref.keyword.equals("Any")){
+        if(pref.keyword.equals(getString(R.string.Any))){
             spinnerKeyword.setSelection(0);
         }else {
             textWarning.setVisibility(View.VISIBLE);
@@ -661,16 +666,16 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
                 switch(valRadius){
                     case 0:
-                        msg=getResources().getString(R.string.miles,3);
+                        msg=getResources().getString(R.string.miles,1);
                         break;
                     case 1:
-                        msg=getResources().getString(R.string.miles,5);
+                        msg=getResources().getString(R.string.miles,3);
                         break;
                     case 2:
-                        msg=getResources().getString(R.string.miles,10);
+                        msg=getResources().getString(R.string.miles,5);
                         break;
                     case 3:
-                        msg=getResources().getString(R.string.miles,15);
+                        msg=getResources().getString(R.string.miles,10);
                         break;
                     default:
                         Toast.makeText(MainActivity.this, "Error: SP:R2", Toast.LENGTH_LONG).show();
@@ -699,7 +704,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
                 switch(valCost){
                     case 0:
-                        msg=getResources().getString(R.string.any);
+                        msg=getResources().getString(R.string.Any);
                         break;
                     case 1:
                         msg="$";
@@ -761,7 +766,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         boolean isSame;
         String json = gson.toJson(pref);
 
-        if(tempJson.equals(json)){
+        if(tempJson!=null&&tempJson.equals(json)){
             isSame=true;
         }else{
             isSame=false;
@@ -821,7 +826,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
     }
 
-    String[] blackList={"hotel","inn","marriott", "hilton", "residence", "golf", "shell", "resort","motel","mobil"};
+    String[] blackList={"hotel","inn","marriott", "hilton", "residence", "golf", "shell", "resort","motel","mobil","bp"};
     private void filterKey(List<HashMap<String, String>> nearbyPlaceList){
         int length=nearbyPlaceList.size();
         String resName, tempName;
@@ -833,14 +838,22 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
             for (String keyString : blackList) {
                 if (tempName.contains(keyString)) {
-                    nearbyPlaceList.remove(i);
-                    i--;
-                    length--;
+                    if(i!=-1){
+                        nearbyPlaceList.remove(i);
+                        i--;
+                        length--;
+                    }
                 }
 
             }
         }
-        randomize(nearbyPlaceList);
+
+        if(nearbyPlaceList.isEmpty()&&tempToken!=null){
+            startAsync(true);
+        }else{
+            randomize(nearbyPlaceList);
+        }
+
     }
 
 
@@ -890,22 +903,21 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
         switch (errorCode){
             case 0:
-                Snackbar.make(findViewById(R.id.layout),"Connection Error:"+source, Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.layout),R.string.connection_error+": "+source, Snackbar.LENGTH_LONG).show();
                 break;
             case 1:
-                Snackbar.make(findViewById(R.id.layout),"No Results Found :(\nPlease Change the Settings for More Results", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.layout),R.string.no_results_found, Snackbar.LENGTH_LONG).show();
                 break;
             case 2:
-                Snackbar.make(findViewById(R.id.layout),"Please Wait Just a Second...", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.layout),R.string.please_wait, Snackbar.LENGTH_LONG).show();
                 break;
             default:
-                Snackbar.make(findViewById(R.id.layout),"Error", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(R.id.layout),R.string.error, Snackbar.LENGTH_LONG).show();
         }
     }
 
 
     private void popUp(final String resName, final String resImage) {
-
 
         //initialize dialogue
         //opens popup
@@ -1009,6 +1021,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         if(hashSaved==null){
             hashSaved=new LinkedHashMap();
             hashSaved.put(resName, resImage);
+            hashSaved.put(resName, resImage);
         }else{
 
             hashSaved.put(resName, resImage);
@@ -1025,7 +1038,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         }
 
         dialog.dismiss();
-        Snackbar.make(findViewById(R.id.layout),"Restaurant Saved!", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(findViewById(R.id.layout),R.string.restaurant_saved, Snackbar.LENGTH_SHORT).show();
     }
 
     private void getAds(){

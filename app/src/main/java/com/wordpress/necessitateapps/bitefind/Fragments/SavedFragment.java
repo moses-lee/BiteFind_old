@@ -69,7 +69,7 @@ public class SavedFragment extends Fragment {
     private void warning(final SharedPreferences.Editor editor){
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(getActivity());
         mBuilder.setMessage("Saved List And Notes Are Saved On Device. They Will Be Deleted If You Delete The App");
-        mBuilder.setCancelable(true);
+        mBuilder.setCancelable(false);
 
         mBuilder.setPositiveButton(
                 "OK",
