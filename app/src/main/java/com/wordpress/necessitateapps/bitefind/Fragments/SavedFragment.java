@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.flurry.android.FlurryAgent;
 import com.wordpress.necessitateapps.bitefind.R;
 
 import java.io.FileInputStream;
@@ -40,6 +41,7 @@ public class SavedFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_saved, container, false);
 
+
         RecyclerView recyclerView =view.findViewById(R.id.recycler_view);
         textEmpty=view.findViewById(R.id.text_empty);
 
@@ -57,12 +59,24 @@ public class SavedFragment extends Fragment {
         SharedPreferences.Editor editor = sharedPref.edit();
 
         if(sharedPref.getBoolean("firsttime", true)){
-
             warning(editor);
         }
 
-
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        FlurryAgent.onStartSession(getActivity());
+        FlurryAgent.logEvent("SavedActivity");
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        FlurryAgent.onEndSession(getActivity());
     }
 
     //tells user saved list/notes are only saved on the app.

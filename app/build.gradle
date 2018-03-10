@@ -6,7 +6,7 @@ android {
         applicationId "com.wordpress.necessitateapps.bitefind"
         minSdkVersion 22
         targetSdkVersion 27
-        versionCode 13
+        versionCode 14
         versionName "v.2.2.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -37,7 +37,7 @@ dependencies {
     implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
     implementation 'com.airbnb.android:lottie:2.5.0'
     implementation 'com.google.code.gson:gson:2.8.2'
-
+    implementation 'com.flurry.android:analytics:9.0.0@aar'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'

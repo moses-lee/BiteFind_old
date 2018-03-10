@@ -44,6 +44,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.flurry.android.FlurryAgent;
+import com.flurry.android.FlurryAgentListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
@@ -71,7 +73,6 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 
@@ -104,6 +105,15 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Flurry Analytics
+        new FlurryAgent.Builder()
+                .withLogEnabled(true)
+                .withCaptureUncaughtExceptions(true)
+                .withContinueSessionMillis(5000)
+                .build(this, getString(R.string.API_KEY_FLURRY));
+
+
 
         //sets the toolbar
         android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar);
@@ -230,8 +240,10 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
     protected void onStart() {
         super.onStart();
         rippleBackground.startRippleAnimation();
-
         easterEgg();
+
+        FlurryAgent.onStartSession(this);
+        FlurryAgent.logEvent("MainActivity");
     }
 
 
@@ -241,6 +253,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
         rippleBackground.stopRippleAnimation();
         tempJson=null;
         tempToken=null;
+        FlurryAgent.onEndSession(this);
     }
 
     @Override
@@ -352,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements GetResults.AsyncR
 
 
     private void buttonClick(){
-
+        FlurryAgent.logEvent("ButtonClick");
         if(mLocation.isEmpty()){
             Snackbar.make(findViewById(R.id.layout),R.string.location_hint, Snackbar.LENGTH_LONG).show();
             askLocationPref(true);

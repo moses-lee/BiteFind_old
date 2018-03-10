@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BiteFind</string>
+    <string name="search_radius">Raio de Pesquisa</string>
+    <string name="location">Posição</string>
+    <string name="saved">Guardado</string>
+    <string name="about">Sobre</string>
+    <string name="cost">Custo</string>
+    <string name="opennow">Aberto Agora</string>
+    <string name="rest_type">Tipo de Restaurante</string>
+    <string name="restaurant">Restaurante</string>
+    <string name="third_party_libraries">Bibliotecas</string>
+    <string name="privacy_policy">Apólice de Privacidade</string>
+    <string name="manual">Manual</string>
+    <string name="auto">Auto</string>
+    <string name="miles">~%d Milhas</string>
+    <string name="location_pref">Preferências de Posição</string>
+    <string name="settings">Configurações</string>
+    <string name="set">Configurar</string>
+    <string name="error_loading_image">Imagem Indisponível</string>
+    <string name="your_saved_restaurants_will_appear_here">Seus Restaurantes Salvos Aparecerão Aqui</string>
+    <string name="type_warning">O Tipo de Restaurante Também Não Produzirá Resultados Precisos</string>
+    <string name="notes_empty">Clique Aqui Para Adicionar Notas!</string>
+    <string name="contact_us">Contate-Nos</string>
+    <string name="restaurant_saved">Restaurante Guardado!</string>
+    <string name="connection_error">Erro de Conexão</string>
+    <string name="no_results_found">Nenhum Resultado Encontrado\nAltere as Configurações Para Obter Mais Resultados</string>
+    <string name="please_wait">Por Favor Espere um Segundo</string>
+    <string name="error">Erro</string>
+    <string name="long_click">Clique Continuamente Para Alterar as Preferências de Localização</string>
+    <string name="location_permissions">O Local Deve ser Ativado Para Localização Automática</string>
+    <string name="location_hint">Você Pode Sempre Alterar as Preferências de Local por um Longo Clique no Texto da Localização</string>
+    <string name="rate_prompt">Curtindo Isso?\nAgradecemos Sua Avaliação</string>
+    <string name="rate">Avaliação</string>
+    <string name="no">No</string>
+    <string name="never">Nunca</string>
+    <string name="permission_denied">Permissão Negada</string>
+
+    <string name="Any">Qualquer</string>
+    <string name="Asian">Asiático</string>
+    <string name="Bar">Bar</string>
+    <string name="Breakfast">O Pequeno Almoço</string>
+    <string name="Buffet">Bufê</string>
+    <string name="Cafe">Café</string>
+    <string name="Desserts">Sobremesa</string>
+    <string name="Dinner">Jantar</string>
+    <string name="Fast_Food">Comida Rápida</string>
+    <string name="Healthy">Saudável</string>
+    <string name="Italian">Italiano</string>
+    <string name="Lunch">Almoço</string>
+    <string name="Mexican">Mexicano</string>
+</resources>

@@ -28,7 +28,7 @@
     <string name="please_wait">Por Favor Espere Un Momento</string>
     <string name="error">Error</string>
     <string name="long_click">Sostener Clic Para Cambiar Ajustos de Localización</string>
-    <string name="location_permissions">La Ubicación debe estar Activada para la  Localización automática</string>
+    <string name="location_permissions">La Ubicación debe estar Activada para la  Localización Automática</string>
     <string name="location_hint">Siempre Puede Cambiar las Preferencias de Localización Haciendo Clic Largo en el Texto de Localización</string>
     <string name="rate_prompt">Disfrutando en BiteFind? ¡Apreciaríamos su calificación!</string>
     <string name="rate">Calificar</string>
